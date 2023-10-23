@@ -1,0 +1,110 @@
+"""
+Эндпоинты благотворительных проектов.
+"""
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.db import get_async_session
+from app.core.user import current_superuser
+from app.crud.charity_project import charity_project_crud
+from app.schemas.charity_project import (CharityProjectCreate,
+                                         CharityProjectRead,
+                                         CharityProjectUpdate)
+from app.api.validators import (check_charity_project_name_unique,
+                                check_charity_project_before_editing,
+                                check_charity_project_before_deleting,
+                                check_charity_project_full_amount)
+from app.services.funds_allocation import allocate_funds
+from app.models import Donation
+
+router = APIRouter()
+
+
+@router.post(
+    '/',
+    response_model=CharityProjectRead,
+    response_model_exclude_none=True,
+    dependencies=[Depends(current_superuser)],
+    summary='Создать благотворительный проект. Только для суперпользователя.'
+)
+async def charity_project_create(
+        charity_project: CharityProjectCreate,
+        session: AsyncSession = Depends(get_async_session)
+):
+    """
+    Создать благотворительный проект. Доступно только суперпользователю.
+    """
+    await check_charity_project_name_unique(charity_project.name, session)
+    new_project = await charity_project_crud.create(charity_project, session)
+    return await allocate_funds(new_project, Donation, session)
+
+
+@router.get(
+    '/',
+    response_model=list[CharityProjectRead],
+    response_model_exclude_none=True,
+    summary='Получить список всех благотворительных проектов.'
+)
+async def charity_project_get_all(
+        session: AsyncSession = Depends(get_async_session),
+):
+    """
+    Получить список всех благотворительных проектов.
+    """
+    return await charity_project_crud.get_many(session)
+
+
+@router.patch(
+    '/{charity_project_id}',
+    response_model=CharityProjectRead,
+    dependencies=[Depends(current_superuser)],
+    summary='Внести изменения в проект. Только для суперпользователя.'
+)
+async def charity_project_update(
+        charity_project_id: int,
+        obj_in: CharityProjectUpdate,
+        session: AsyncSession = Depends(get_async_session),
+):
+    """
+    Изменить существующий проект. Доступно только суперпользователю.
+    """
+    # проверить имя на уникальность
+    if obj_in.name:
+        await check_charity_project_name_unique(obj_in.name, session)
+
+    # проверить, что проект существует и не закрыт
+    charity_project = await check_charity_project_before_editing(
+        charity_project_id,
+        session
+    )
+
+    # проверить, что требуемая сумма не меньше уже внесенной
+    if obj_in.full_amount:
+        await check_charity_project_full_amount(obj_in.full_amount,
+                                                charity_project.invested_amount
+                                                )
+
+    charity_project = await charity_project_crud.update(charity_project,
+                                                        obj_in,
+                                                        session)
+    return await allocate_funds(charity_project, Donation, session)
+
+
+@router.delete(
+    '/{charity_project_id}',
+    response_model=CharityProjectRead,
+    dependencies=[Depends(current_superuser)],
+    summary='Удалить проект. Только для суперпользователя.'
+)
+async def charity_project_delete(
+        charity_project_id: int,
+        session: AsyncSession = Depends(get_async_session),
+):
+    """
+    Удалить проект из БД. Доступно только суперпользователю.
+    """
+    # проверить, что проект существует, не закрыт и средства в него не внесены
+    charity_project = await check_charity_project_before_deleting(
+        charity_project_id, session)
+
+    return await charity_project_crud.remove(charity_project, session)
