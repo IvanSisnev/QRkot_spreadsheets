@@ -15,7 +15,6 @@ from app.core.constants import (DATE_FORMAT, REPORT_TITLE, LOCALE, SHEET_TYPE,
 from app.services.utils import timedelta_to_str
 
 
-# todo перенести в google_client?
 async def set_user_permissions(spreadsheet_id: str,
                                wrapper_services: Aiogoogle) -> None:
     """
@@ -48,8 +47,6 @@ async def spreadsheets_create(
         'properties': {'title': f'{document_sheet_title}',
                        'locale': LOCALE},
         'sheets': [{'properties': {'sheetType': SHEET_TYPE,
-                                   # todo
-                                   # 'sheetId': 0,
                                    'title': f'{document_sheet_title}',
                                    'gridProperties': {
                                        'rowCount': ROW_COUNT,

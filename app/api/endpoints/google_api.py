@@ -21,13 +21,14 @@ router = APIRouter()
     '/',
     response_model=list[CharityProjectRead],
     dependencies=[Depends(current_superuser)],
+    summary='Создать отчет о пожертвованиях'
 )
 async def get_report(
         session: AsyncSession = Depends(get_async_session),
         wrapper_services: Aiogoogle = Depends(get_service)
 ):
     """
-    Создание отчёта в Google таблице по скорости закрытия благотворительных
+    Создать отчёт в Google Sheets о скорости закрытия благотворительных
     проектов.
     """
     closed_projects = await (
