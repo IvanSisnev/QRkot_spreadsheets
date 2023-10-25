@@ -1,5 +1,5 @@
 """
-Учетные данные для Google API и сессия Aiogoogle
+Обработка учетных данных для Google API и создание сессии Aiogoogle.
 """
 from aiogoogle import Aiogoogle
 from aiogoogle.auth.creds import ServiceAccountCreds
