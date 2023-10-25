@@ -27,11 +27,11 @@ async def set_user_permissions(spreadsheet_id: str,
 
 
 
-async def spreadsheets_create(wrapper_services: Aiogoogle):
+async def spreadsheets_create(wrapper_services: Aiogoogle) -> str:
     """
     Создать таблицу.
     """
-    pass
+
 
 
 async def spreadsheets_update_value(spreadsheet_id: str,

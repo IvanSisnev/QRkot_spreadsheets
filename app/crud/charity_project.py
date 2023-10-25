@@ -30,13 +30,14 @@ class CharityProjectCRUD(BaseCRUD):
             self, session: AsyncSession) -> list[CharityProject]:
         """
         Получить из базы список благотворительных проектов, отсортированный
-        по убыванию скорости их закрытия.
+        по убыванию скорости их закрытия (возрастанию разницы между датами
+        открытия и закрытия проекта).
         """
         closed_projects = await session.execute(
             select(CharityProject).where(
                 CharityProject.fully_invested
             ).order_by(
-                (CharityProject.close_date - CharityProject.create_date).days
+                (CharityProject.close_date - CharityProject.create_date)
             )
         )
         return closed_projects.scalars().all()
