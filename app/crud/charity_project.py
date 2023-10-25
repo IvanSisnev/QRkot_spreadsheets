@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import BaseCRUD
 from app.models.charity_project import CharityProject
+from app.core.constants import PROJECTS_NUM_LIMIT
 
 
 class CharityProjectCRUD(BaseCRUD):
@@ -31,7 +32,8 @@ class CharityProjectCRUD(BaseCRUD):
         """
         Получить из базы список благотворительных проектов, отсортированный
         по убыванию скорости их закрытия (возрастанию разницы между датами
-        открытия и закрытия проекта).
+        открытия и закрытия проекта), количество проектов в списке задано
+        константой.
         """
         closed_projects = await session.execute(
             select(CharityProject).where(
@@ -40,7 +42,7 @@ class CharityProjectCRUD(BaseCRUD):
                 (CharityProject.close_date - CharityProject.create_date)
             )
         )
-        return closed_projects.scalars().all()
+        return closed_projects.scalars().all()[:PROJECTS_NUM_LIMIT]
 
 
 charity_project_crud = CharityProjectCRUD(CharityProject)
