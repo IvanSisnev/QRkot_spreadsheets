@@ -32,3 +32,7 @@ COLUMN3_HEADER: Final[str] = 'Описание проекта'
 
 # локаль
 LOCALE: Final[str] = 'ru_RU'
+
+# версии Google Drive и Sheets
+DRIVE_VERSION: Final[str] = 'v3'
+SHEETS_VERSION: Final[str] = 'v4'
