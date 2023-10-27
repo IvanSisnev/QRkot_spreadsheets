@@ -47,15 +47,13 @@ async def spreadsheets_create(
     spreadsheet_body = {
         'properties': {'title': f'{document_sheet_title}',
                        'locale': LOCALE},
-        'sheets': [{'properties': {'sheetType': SHEET_TYPE,
-                                   'title': f'{document_sheet_title}',
-                                   'gridProperties': {
-                                       'rowCount': ROW_COUNT,
-                                       'columnCount': COLUMN_COUNT
-                                   }
-                                   }
-                    }
-                   ]
+        'sheets': [
+            {'properties': {'sheetType': SHEET_TYPE,
+                            'title': f'{document_sheet_title}',
+                            'gridProperties': {'rowCount': ROW_COUNT,
+                                               'columnCount': COLUMN_COUNT}}
+             }
+        ]
     }
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
